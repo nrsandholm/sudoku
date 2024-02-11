@@ -80,7 +80,7 @@ function getBoxProps(size: Size): Box {
   throw new Error('Not implemented!');
 }
 
-function getBoldedClass(box: Box, rowIndex: number, columnIndex: number): string {
+function getInnerBoxClasses(box: Box, rowIndex: number, columnIndex: number): string {
   const classes = [];
   if ((columnIndex + 1) % box.nthColumn === 0) {
     classes.push('bold-right');
@@ -115,7 +115,7 @@ function Board({ size }: BoardProps) {
   for (let i = 0; i < size; i++) {
     const columns: ReactElement[] = [];
     for (let j = 0; j < size; j++) {
-      const classes = getBoldedClass(box, i, j);
+      const classes = getInnerBoxClasses(box, i, j);
       columns.push(<Cell extraClassNames={classes} />)
     }
     rows.push(<Row columns={columns} />)
