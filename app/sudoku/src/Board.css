@@ -19,9 +19,22 @@
   display: table-cell;
   vertical-align: middle;
   width: 2rem;
+  max-width: 2rem;
   height: 2rem;
+  max-height: 2rem;
   border-right: 1px solid #000;
   border-bottom: 1px solid #000;
+}
+
+.board .row .cell input {
+  border: 0;
+  width: 1rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.board .row .cell input:focus {
+  outline: none;
 }
 
 .board .row .cell.bold-bottom {

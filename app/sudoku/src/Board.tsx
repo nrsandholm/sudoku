@@ -39,7 +39,9 @@ interface CellProps {
 }
 
 function Cell(props: CellProps) {
-  return <div className={`cell ${props.extraClassNames}`}>1</div>
+  return <div className={`cell ${props.extraClassNames}`}>
+    <input type='text' maxLength={1} />
+  </div>
 }
 
 interface RowProps {
