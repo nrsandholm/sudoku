@@ -1,0 +1,38 @@
+.board {
+  display: table;
+  margin-left: auto;
+  margin-right: auto;
+  border: 3px solid #000;
+}
+
+.board .row {
+  display: table-row;
+  width: 100%;
+}
+
+.board .row:last-child .cell,
+.board .row:last-child .cell.bold-bottom {
+  border-bottom: 0px solid #000;
+}
+
+.board .row .cell {
+  display: table-cell;
+  vertical-align: middle;
+  width: 2rem;
+  height: 2rem;
+  border-right: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+
+.board .row .cell.bold-bottom {
+  border-bottom: 2px solid #000;
+}
+
+.board .row .cell.bold-right {
+  border-right: 2px solid #000;
+}
+
+.board .row .cell:last-child,
+.board .row .cell:last-child.bold-right {
+  border-right: 0px solid #000;
+}
