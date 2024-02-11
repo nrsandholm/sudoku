@@ -7,6 +7,63 @@ interface BoardProps {
   size: Size
 }
 
+function getAvailableChars(size: Size): string[] {
+  return '123456789abcdefghijklmnopqrstuvwxyz'
+    .substring(0, size)
+    .split('');
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#getting_a_random_integer_between_two_values_inclusive
+function getRandomIntInclusive(min: number, max: number): number {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled); // The maximum is inclusive and the minimum is inclusive
+}
+
+function getRandomChar(chars: string[]): string {
+  return chars[getRandomIntInclusive(0, chars.length - 1)];
+}
+
+interface Sortable {
+  value: string
+  sortIndex: number
+}
+
+function randomize(row: string[]): string[] {
+  return [...row]
+    .map<Sortable>((value) => ({ value, sortIndex: Math.random()}))
+    .sort((a: Sortable, b: Sortable) => a.sortIndex - b.sortIndex)
+    .map(value => value.value);
+}
+
+function getValuesByColumn(table: string[][], index: number): string[] {
+  return table.flatMap<string>((row) => row[index]);
+}
+
+function reduce(taken: string[], available: string[]): string[] {
+  return available.filter(a => !taken.includes(a));
+}
+
+function generate(size: Size): string[][] {
+  const all = getAvailableChars(size);
+  const table: string[][] = [];
+  for (let r = 0; r < size; r++) {
+    if (r === 0) {
+      table.push(randomize(all));
+      continue;
+    }
+    const row: string[] = [];
+    for (let c = 0; c < size; c++) {
+      const reduced1 = reduce(row, all);
+      const reduced2 = reduce(getValuesByColumn(table, c), reduced1);
+      const random = getRandomChar(reduced2);
+      row.push(random);
+    }
+    table.push(row);
+  }
+  return table;
+}
+
 interface Box {
   nthColumn: number
   nthRow: number
