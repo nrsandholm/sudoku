@@ -127,11 +127,12 @@ function getInnerBoxClasses(box: Box, rowIndex: number, columnIndex: number): st
 
 interface CellProps {
   extraClassNames: string
+  value: string
 }
 
 function Cell(props: CellProps) {
   return <div className={`cell ${props.extraClassNames}`}>
-    <input type='text' maxLength={1} />
+    <input type='text' maxLength={1} value={props.value} />
   </div>
 }
 
@@ -144,15 +145,16 @@ function Row(props: RowProps) {
 }
 
 function Board({ size }: BoardProps) {
-  const box = getBoxProps(size)
+  const box = getBoxProps(size);
+  const board: string[][] = generate(size, box);
   const rows: ReactElement[] = [];
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < board.length; i++) {
     const columns: ReactElement[] = [];
-    for (let j = 0; j < size; j++) {
+    for (let j = 0; j < board[i].length; j++) {
       const classes = getInnerBoxClasses(box, i, j);
-      columns.push(<Cell extraClassNames={classes} />)
+      columns.push(<Cell key={`${i}${j}`} extraClassNames={classes} value={board[i][j]} />)
     }
-    rows.push(<Row columns={columns} />)
+    rows.push(<Row key={i} columns={columns} />)
   }
   return (
     <div className="board">
