@@ -36,15 +36,53 @@ function randomize(row: string[]): string[] {
     .map(value => value.value);
 }
 
-function getValuesByColumn(table: string[][], index: number): string[] {
+type GetReservedByColumn = (c: number) => string[]
+
+function getReservedByColumn(table: string[][], index: number): string[] {
   return table.flatMap<string>((row) => row[index]);
+}
+
+type GetReservedByInnerBox = (c: number) => string[]
+
+function getReservedByInnerBox(table: string[][], rowIndex: number, colIndex: number, box: Box): string[] {
+  const boxRowStartIndex = rowIndex - (rowIndex % box.nthRow);
+  const boxColStartIndex = colIndex - (colIndex % box.nthColumn);
+  const taken = [];
+  for (let i = rowIndex; i >= boxRowStartIndex; i--) {
+    if (table[i] === undefined) {
+      continue;
+    }
+    const endIndex =  i === rowIndex ? colIndex : boxColStartIndex + box.nthColumn;
+    const takenByRow = table[i].slice(boxColStartIndex, endIndex);
+    taken.push(...takenByRow);
+  }
+  return taken;
 }
 
 function reduce(taken: string[], available: string[]): string[] {
   return available.filter(a => !taken.includes(a));
 }
 
-function generate(size: Size): string[][] {
+function generateRow(size: Size, all: string[], getRecervedByColumn: GetReservedByColumn, getReservedByInnerBox: GetReservedByInnerBox): string[] {
+  const row: string[] = [];
+  while (row.length < size) {
+    for (let c = 0; c < size; c++) {
+      const available1 = reduce(row, all);
+      const available2 = reduce(getRecervedByColumn(c), available1);
+      const available3 = reduce(getReservedByInnerBox(c), available2);
+      if (available3.length === 0) {
+        console.log('Reset');
+        row.length = 0;
+        break;
+      }
+      const random = getRandomChar(available3);
+      row.push(random);
+    }
+  }
+  return row;
+}
+
+function generate(size: Size, box: Box): string[][] {
   const all = getAvailableChars(size);
   const table: string[][] = [];
   for (let r = 0; r < size; r++) {
@@ -52,13 +90,9 @@ function generate(size: Size): string[][] {
       table.push(randomize(all));
       continue;
     }
-    const row: string[] = [];
-    for (let c = 0; c < size; c++) {
-      const reduced1 = reduce(row, all);
-      const reduced2 = reduce(getValuesByColumn(table, c), reduced1);
-      const random = getRandomChar(reduced2);
-      row.push(random);
-    }
+    const _getReservedByColumn = (c: number) => getReservedByColumn(table, c);
+    const _getReservedByInnerBox = (c: number) => getReservedByInnerBox(table, r, c, box);
+    const row = generateRow(size, all, _getReservedByColumn, _getReservedByInnerBox);
     table.push(row);
   }
   return table;
