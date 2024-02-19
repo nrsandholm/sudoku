@@ -6,7 +6,7 @@ function App() {
     <div className="app">
       <header className="app-header">Sudoku</header>
       <div>
-        <Board size={16}></Board>
+        <Board size={9}></Board>
       </div>
     </div>
   );
