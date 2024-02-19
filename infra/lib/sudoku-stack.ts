@@ -19,6 +19,12 @@ export class SudokuStack extends Stack {
     const bucket = new aws_s3.Bucket(this, 'WebAppBucket', {
       bucketName: props.bucketName,
       publicReadAccess: true,
+      blockPublicAccess: new aws_s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      }),
       removalPolicy: RemovalPolicy.DESTROY,
       websiteIndexDocument: 'index.html',
     });
