@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { ChangeEvent, ReactElement, useState } from 'react';
 import './Board.css';
 
 type Size = 9 | 16 | 25
@@ -127,12 +127,21 @@ function getInnerBoxClasses(box: Box, rowIndex: number, columnIndex: number): st
 
 interface CellProps {
   extraClassNames: string
-  value: string
+  correctValue: string
+  hidden: boolean
 }
 
 function Cell(props: CellProps) {
+  const [state, setState] = useState({
+    value: props.hidden ? '' : props.correctValue
+  });
+  const handleChange = (input: ChangeEvent<HTMLInputElement>) => {
+    setState(() => {
+      return { value: input.target.value };
+    });
+  };
   return <div className={`cell ${props.extraClassNames}`}>
-    <input type='text' maxLength={1} value={props.value} />
+    <input type='text' maxLength={1} value={state.value} disabled={!props.hidden} onChange={handleChange} />
   </div>
 }
 
@@ -151,8 +160,9 @@ function Board({ size }: BoardProps) {
   for (let i = 0; i < board.length; i++) {
     const columns: ReactElement[] = [];
     for (let j = 0; j < board[i].length; j++) {
+      const hidden = Math.random() > 0.5 ? true : false;
       const classes = getInnerBoxClasses(box, i, j);
-      columns.push(<Cell key={`${i}${j}`} extraClassNames={classes} value={board[i][j]} />)
+      columns.push(<Cell key={`${i}${j}`} extraClassNames={classes} correctValue={board[i][j]} hidden={hidden} />)
     }
     rows.push(<Row key={i} columns={columns} />)
   }
