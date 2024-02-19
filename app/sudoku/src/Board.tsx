@@ -65,7 +65,8 @@ function reduce(taken: string[], available: string[]): string[] {
 
 function generateRow(size: Size, all: string[], getRecervedByColumn: GetReservedByColumn, getReservedByInnerBox: GetReservedByInnerBox): string[] {
   const row: string[] = [];
-  while (row.length < size) {
+  let retryCount = 0;
+  while (row.length < size && retryCount < 10) {
     for (let c = 0; c < size; c++) {
       const available1 = reduce(row, all);
       const available2 = reduce(getRecervedByColumn(c), available1);
@@ -73,6 +74,7 @@ function generateRow(size: Size, all: string[], getRecervedByColumn: GetReserved
       if (available3.length === 0) {
         console.log('Reset');
         row.length = 0;
+        retryCount++;
         break;
       }
       const random = getRandomChar(available3);
@@ -85,15 +87,26 @@ function generateRow(size: Size, all: string[], getRecervedByColumn: GetReserved
 function generate(size: Size, box: Box): string[][] {
   const all = getAvailableChars(size);
   const table: string[][] = [];
-  for (let r = 0; r < size; r++) {
-    if (r === 0) {
+  const maxRowRetryCount = 500;
+  let rowRetryCount = 0;
+  while (table.length < size && rowRetryCount < maxRowRetryCount) {
+    const rowIndex = table.length;
+    if (rowIndex === 0) {
       table.push(randomize(all));
       continue;
     }
     const _getReservedByColumn = (c: number) => getReservedByColumn(table, c);
-    const _getReservedByInnerBox = (c: number) => getReservedByInnerBox(table, r, c, box);
+    const _getReservedByInnerBox = (c: number) => getReservedByInnerBox(table, rowIndex, c, box);
     const row = generateRow(size, all, _getReservedByColumn, _getReservedByInnerBox);
-    table.push(row);
+    if (row.length === 0) {
+      rowRetryCount++;
+      table.pop();
+    } else {
+      table.push(row);
+    }
+  }
+  if (table.length !== size) {
+    window.alert('Sorry, wasn\'t able to generate a full sudoku board :(');
   }
   return table;
 }
