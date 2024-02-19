@@ -103,6 +103,7 @@ function generateBoard(size: Size, box: Box): string[][] {
       retryCount++;
       table.pop();
     } else {
+      retryCount--;
       table.push(row);
     }
   }
