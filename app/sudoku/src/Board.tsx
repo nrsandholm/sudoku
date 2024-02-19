@@ -1,6 +1,8 @@
 import { ChangeEvent, ReactElement, useState } from 'react';
 import './Board.css';
 
+const MAX_RETRY_COUNT = 10;
+
 type Size = 9 | 16 | 25
 
 interface BoardProps {
@@ -66,7 +68,7 @@ function reduce(taken: string[], available: string[]): string[] {
 function generateRow(size: Size, all: string[], getRecervedByColumn: GetReservedByColumn, getReservedByInnerBox: GetReservedByInnerBox): string[] {
   const row: string[] = [];
   let retryCount = 0;
-  while (row.length < size && retryCount < 10) {
+  while (row.length < size && retryCount < MAX_RETRY_COUNT) {
     for (let c = 0; c < size; c++) {
       const available1 = reduce(row, all);
       const available2 = reduce(getRecervedByColumn(c), available1);
@@ -87,9 +89,8 @@ function generateRow(size: Size, all: string[], getRecervedByColumn: GetReserved
 function generateBoard(size: Size, box: Box): string[][] {
   const all = getAvailableChars(size);
   const table: string[][] = [];
-  const maxRowRetryCount = 500;
-  let rowRetryCount = 0;
-  while (table.length < size && rowRetryCount < maxRowRetryCount) {
+  let retryCount = 0;
+  while (table.length < size && retryCount < MAX_RETRY_COUNT) {
     const rowIndex = table.length;
     if (rowIndex === 0) {
       table.push(randomize(all));
@@ -99,7 +100,7 @@ function generateBoard(size: Size, box: Box): string[][] {
     const _getReservedByInnerBox = (colIndex: number) => getReservedByInnerBox(table, rowIndex, colIndex, box);
     const row = generateRow(size, all, _getReservedByColumn, _getReservedByInnerBox);
     if (row.length === 0) {
-      rowRetryCount++;
+      retryCount++;
       table.pop();
     } else {
       table.push(row);
