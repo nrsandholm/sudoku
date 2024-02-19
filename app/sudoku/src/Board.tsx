@@ -84,7 +84,7 @@ function generateRow(size: Size, all: string[], getRecervedByColumn: GetReserved
   return row;
 }
 
-function generate(size: Size, box: Box): string[][] {
+function generateBoard(size: Size, box: Box): string[][] {
   const all = getAvailableChars(size);
   const table: string[][] = [];
   const maxRowRetryCount = 500;
@@ -95,8 +95,8 @@ function generate(size: Size, box: Box): string[][] {
       table.push(randomize(all));
       continue;
     }
-    const _getReservedByColumn = (c: number) => getReservedByColumn(table, c);
-    const _getReservedByInnerBox = (c: number) => getReservedByInnerBox(table, rowIndex, c, box);
+    const _getReservedByColumn = (colIndex: number) => getReservedByColumn(table, colIndex);
+    const _getReservedByInnerBox = (colIndex: number) => getReservedByInnerBox(table, rowIndex, colIndex, box);
     const row = generateRow(size, all, _getReservedByColumn, _getReservedByInnerBox);
     if (row.length === 0) {
       rowRetryCount++;
@@ -174,7 +174,7 @@ function Row(props: RowProps) {
 function Board({ size }: BoardProps) {
   const availableChars = getAvailableChars(size);
   const box = getBoxProps(size);
-  const board: string[][] = generate(size, box);
+  const board: string[][] = generateBoard(size, box);
   const rows: ReactElement[] = [];
   for (let i = 0; i < board.length; i++) {
     const columns: ReactElement[] = [];
