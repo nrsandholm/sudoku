@@ -129,6 +129,7 @@ interface CellProps {
   extraClassNames: string
   correctValue: string
   hidden: boolean
+  acceptedChars: string[]
 }
 
 function Cell(props: CellProps) {
@@ -136,8 +137,12 @@ function Cell(props: CellProps) {
     value: props.hidden ? '' : props.correctValue
   });
   const handleChange = (input: ChangeEvent<HTMLInputElement>) => {
-    setState(() => {
-      return { value: input.target.value };
+    setState((prevState) => {
+      const value = input.target.value;
+      if (!props.acceptedChars.includes(value)) {
+        return { value: '' };
+      }
+      return { value: value };
     });
   };
   return <div className={`cell ${props.extraClassNames}`}>
@@ -154,6 +159,7 @@ function Row(props: RowProps) {
 }
 
 function Board({ size }: BoardProps) {
+  const availableChars = getAvailableChars(size);
   const box = getBoxProps(size);
   const board: string[][] = generate(size, box);
   const rows: ReactElement[] = [];
@@ -162,7 +168,14 @@ function Board({ size }: BoardProps) {
     for (let j = 0; j < board[i].length; j++) {
       const hidden = Math.random() > 0.5 ? true : false;
       const classes = getInnerBoxClasses(box, i, j);
-      columns.push(<Cell key={`${i}${j}`} extraClassNames={classes} correctValue={board[i][j]} hidden={hidden} />)
+      columns.push(
+        <Cell key={`${i}${j}`}
+          extraClassNames={classes}
+          correctValue={board[i][j]}
+          hidden={hidden}
+          acceptedChars={availableChars}
+        />
+      );
     }
     rows.push(<Row key={i} columns={columns} />)
   }
