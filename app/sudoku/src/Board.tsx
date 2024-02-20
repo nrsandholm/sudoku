@@ -206,7 +206,7 @@ function Board({ size }: BoardProps) {
       const hidden = Math.random() > 0.5 ? true : false;
       const classes = getInnerBoxClasses(dimensions.innerBox, i, j);
       columns.push(
-        <Cell key={`${i}${j}`}
+        <Cell key={`row-${i}-cell-${j}`}
           extraClassNames={classes}
           correctValue={board[i][j]}
           hidden={hidden}
@@ -214,10 +214,10 @@ function Board({ size }: BoardProps) {
         />
       );
     }
-    rows.push(<Row key={i} columns={columns} />)
+    rows.push(<Row key={`row-${i}`} columns={columns} />)
   }
   return (
-    <div className="board">
+    <div className="board" key={`board-${size}`}>
       {rows}
     </div>
   );
