@@ -3,7 +3,7 @@ import './Board.css';
 
 const MAX_RETRY_COUNT = 10;
 
-type Size = 9 | 16 | 25
+type Size = 4 | 6 | 9 | 12 | 16 | 20 | 25
 
 interface BoardProps {
   size: Size
@@ -20,6 +20,44 @@ function getRandomIntInclusive(min: number, max: number): number {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled); // The maximum is inclusive and the minimum is inclusive
+}
+
+interface InnerBox {
+  columns: number
+  rows: number
+}
+
+interface Dimensions {
+  size: Size
+  innerBox: InnerBox
+}
+
+function findDimensions(size: Size, denominator: number): Dimensions {
+  if ((size / denominator) % 1 === 0) {
+    const arr: number[] = [size / denominator, denominator];
+    return {
+      size: size,
+      innerBox: {
+        columns: Math.min(...arr),
+        rows: Math.max(...arr),
+      },
+    }
+  }
+  return findDimensions(size, ++denominator);
+}
+
+function getDimensions(size: Size): Dimensions {
+  const sqrt = Math.sqrt(size);
+  if (size % sqrt === 0) {
+    return {
+      size: size,
+      innerBox: {
+        columns: sqrt,
+        rows: sqrt,
+      },
+    }
+  }
+  return findDimensions(size, 3);
 }
 
 function getRandomChar(chars: string[]): string {
@@ -46,15 +84,15 @@ function getReservedByColumn(table: string[][], index: number): string[] {
 
 type GetReservedByInnerBox = (c: number) => string[]
 
-function getReservedByInnerBox(table: string[][], rowIndex: number, colIndex: number, box: Box): string[] {
-  const boxRowStartIndex = rowIndex - (rowIndex % box.nthRow);
-  const boxColStartIndex = colIndex - (colIndex % box.nthColumn);
+function getReservedByInnerBox(table: string[][], rowIndex: number, colIndex: number, box: InnerBox): string[] {
+  const boxRowStartIndex = rowIndex - (rowIndex % box.rows);
+  const boxColStartIndex = colIndex - (colIndex % box.columns);
   const taken = [];
   for (let i = rowIndex; i >= boxRowStartIndex; i--) {
     if (table[i] === undefined) {
       continue;
     }
-    const endIndex =  i === rowIndex ? colIndex : boxColStartIndex + box.nthColumn;
+    const endIndex =  i === rowIndex ? colIndex : boxColStartIndex + box.columns;
     const takenByRow = table[i].slice(boxColStartIndex, endIndex);
     taken.push(...takenByRow);
   }
@@ -86,7 +124,7 @@ function generateRow(size: Size, all: string[], getRecervedByColumn: GetReserved
   return row;
 }
 
-function generateBoard(size: Size, box: Box): string[][] {
+function generateBoard({ size, innerBox }: Dimensions): string[][] {
   const all = getAvailableChars(size);
   const table: string[][] = [];
   let retryCount = 0;
@@ -97,7 +135,7 @@ function generateBoard(size: Size, box: Box): string[][] {
       continue;
     }
     const _getReservedByColumn = (colIndex: number) => getReservedByColumn(table, colIndex);
-    const _getReservedByInnerBox = (colIndex: number) => getReservedByInnerBox(table, rowIndex, colIndex, box);
+    const _getReservedByInnerBox = (colIndex: number) => getReservedByInnerBox(table, rowIndex, colIndex, innerBox);
     const row = generateRow(size, all, _getReservedByColumn, _getReservedByInnerBox);
     if (row.length === 0) {
       retryCount++;
@@ -113,28 +151,12 @@ function generateBoard(size: Size, box: Box): string[][] {
   return table;
 }
 
-interface Box {
-  nthColumn: number
-  nthRow: number
-}
-
-function getBoxProps(size: Size): Box {
-  const sqrt = Math.sqrt(size);
-  if (size % sqrt === 0) {
-    return {
-      nthColumn: sqrt,
-      nthRow: sqrt,
-    }
-  }
-  throw new Error('Not implemented!');
-}
-
-function getInnerBoxClasses(box: Box, rowIndex: number, columnIndex: number): string {
+function getInnerBoxClasses(box: InnerBox, rowIndex: number, columnIndex: number): string {
   const classes = [];
-  if ((columnIndex + 1) % box.nthColumn === 0) {
+  if ((columnIndex + 1) % box.columns === 0) {
     classes.push('bold-right');
   }
-  if ((rowIndex + 1) % box.nthRow === 0) {
+  if ((rowIndex + 1) % box.rows === 0) {
     classes.push('bold-bottom');
   }
   return classes.join(' ');
@@ -175,14 +197,14 @@ function Row(props: RowProps) {
 
 function Board({ size }: BoardProps) {
   const availableChars = getAvailableChars(size);
-  const box = getBoxProps(size);
-  const board: string[][] = generateBoard(size, box);
+  const dimensions = getDimensions(size);
+  const board: string[][] = generateBoard(dimensions);
   const rows: ReactElement[] = [];
   for (let i = 0; i < board.length; i++) {
     const columns: ReactElement[] = [];
     for (let j = 0; j < board[i].length; j++) {
       const hidden = Math.random() > 0.5 ? true : false;
-      const classes = getInnerBoxClasses(box, i, j);
+      const classes = getInnerBoxClasses(dimensions.innerBox, i, j);
       columns.push(
         <Cell key={`${i}${j}`}
           extraClassNames={classes}
